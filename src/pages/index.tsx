@@ -6,6 +6,8 @@ import { api } from '../services/api'
 import { convertDurationToTimeString } from "../utils/convertDurationToTImeString"
 import Image from 'next/image'
 import styles from '../styles/home.module.scss'
+import { useContext } from "react"
+import { PlayerContext } from "../contexts/PlayerContext"
 
 interface HomeProps {
   latestEpisodes: Array<Episode>,
@@ -17,12 +19,15 @@ interface Episode {
   title: string,
   members: string,
   publishedAt: string,
-  duration: string,
+  duration: number,
+  durationAsString: string,
   thumbnail: string,
   url: string
 }
 
 export default function Home(props: HomeProps) {
+  const { play } = useContext(PlayerContext)
+
   return (
     <div className={styles.homePage}>
       <section className={styles.latestEpisodes}>
@@ -46,7 +51,7 @@ export default function Home(props: HomeProps) {
                 <span>{episode.duration}</span>
               </div>
 
-              <button type='button'>
+              <button type='button' onClick={() => play(episode)}>
                 <img src='/play-green.svg' alt='Tocar episódio'/>
               </button>
             </li>
@@ -87,7 +92,7 @@ export default function Home(props: HomeProps) {
                 <td style={{width: 100}}>{episode.publishedAt}</td>
                 <td>{episode.duration}</td>
                 <td>
-                  <button type='button'>
+                  <button type='button' onClick={() => play(episode)}>
                     <img src='/play-green.svg'/>
                   </button>
                 </td>
@@ -116,7 +121,8 @@ export const getStaticProps: GetStaticProps = async () => {
       thumbnail: episode.thumbnail,
       members: episode.members,
       publishedAt: format(parseISO(episode.published_at), 'd MMM yy', {locale: ptBR}),
-      duration: convertDurationToTimeString(Number(episode.file.duration)),
+      duration: Number(episode.file.duration),
+      durationAsString: convertDurationToTimeString(Number(episode.file.duration)),
       url: episode.file.url
     }
   })
